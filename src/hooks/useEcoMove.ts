@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { storage } from '@/lib/utils'
 import type { User, Route, Favorite, Trip, Notification, Statistics } from '@/lib/types'
+import { Home, Briefcase, GraduationCap } from 'lucide-react'
 
 // Hook principal para gerenciar o estado do EcoMove
 export function useEcoMove() {
@@ -24,16 +25,113 @@ export function useEcoMove() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [statistics, setStatistics] = useState<Statistics | null>(null)
 
-  // Carregar dados do localStorage na inicialização
+  // Inicializar dados padrão
   useEffect(() => {
-    const savedUser = storage.get<User>('ecomove_user')
+    // Dados padrão para demonstração
+    const defaultFavorites: Favorite[] = [
+      {
+        id: '1',
+        name: 'Casa',
+        address: 'Rua das Flores, 123, Lisboa',
+        icon: <Home className="w-5 h-5 text-blue-600" />
+      },
+      {
+        id: '2',
+        name: 'Trabalho',
+        address: 'Av. da Liberdade, 456, Lisboa',
+        icon: <Briefcase className="w-5 h-5 text-green-600" />
+      },
+      {
+        id: '3',
+        name: 'Universidade',
+        address: 'Campus Universitário, Alameda',
+        icon: <GraduationCap className="w-5 h-5 text-purple-600" />
+      }
+    ]
+
+    const defaultTrips: Trip[] = [
+      {
+        id: '1',
+        from: 'Casa',
+        to: 'Trabalho',
+        date: 'Hoje, 08:30',
+        duration: '25 min',
+        cost: '€2.40',
+        co2Saved: '1.2 kg',
+        transport: ['metro', 'bus']
+      },
+      {
+        id: '2',
+        from: 'Trabalho',
+        to: 'Centro Comercial',
+        date: 'Ontem, 18:45',
+        duration: '18 min',
+        cost: '€1.80',
+        co2Saved: '0.8 kg',
+        transport: ['bus']
+      },
+      {
+        id: '3',
+        from: 'Casa',
+        to: 'Universidade',
+        date: 'Ontem, 09:15',
+        duration: '32 min',
+        cost: '€2.10',
+        co2Saved: '1.5 kg',
+        transport: ['bike', 'metro']
+      }
+    ]
+
+    const defaultNotifications: Notification[] = [
+      {
+        id: '1',
+        type: 'delay',
+        title: 'Atraso na Linha Azul',
+        message: 'Metro com atraso de 5 minutos devido a avaria técnica.',
+        time: '10 min',
+        read: false
+      },
+      {
+        id: '2',
+        type: 'tip',
+        title: 'Dica Sustentável',
+        message: 'Usar bicicleta para trajetos curtos pode poupar até 2kg de CO₂ por dia!',
+        time: '1h',
+        read: false
+      },
+      {
+        id: '3',
+        type: 'route_change',
+        title: 'Nova Rota Disponível',
+        message: 'Descobrimos uma rota 15% mais rápida para o seu trabalho.',
+        time: '2h',
+        read: true
+      }
+    ]
+
+    const defaultUser: User = {
+      id: '1',
+      name: 'João Silva',
+      email: 'joao.silva@email.com',
+      isPremium: false,
+      language: 'pt',
+      preferences: {
+        notifications: true,
+        offlineMode: false,
+        preferredTransport: ['metro', 'bus'],
+        sustainabilityFocus: true
+      }
+    }
+
+    // Carregar dados salvos ou usar padrões
+    const savedUser = storage.get<User>('ecomove_user') || defaultUser
     const savedLanguage = storage.get<'pt' | 'en' | 'es'>('ecomove_language', 'pt')
     const savedBalance = storage.get<number>('ecomove_balance', 45.80)
-    const savedFavorites = storage.get<Favorite[]>('ecomove_favorites', [])
-    const savedTrips = storage.get<Trip[]>('ecomove_trips', [])
-    const savedNotifications = storage.get<Notification[]>('ecomove_notifications', [])
+    const savedFavorites = storage.get<Favorite[]>('ecomove_favorites') || defaultFavorites
+    const savedTrips = storage.get<Trip[]>('ecomove_trips') || defaultTrips
+    const savedNotifications = storage.get<Notification[]>('ecomove_notifications') || defaultNotifications
 
-    if (savedUser) setUser(savedUser)
+    setUser(savedUser)
     setSelectedLanguage(savedLanguage)
     setWalletBalance(savedBalance)
     setFavorites(savedFavorites)
@@ -75,9 +173,9 @@ export function useEcoMove() {
 
     try {
       // Simular chamada à API
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await new Promise(resolve => setTimeout(resolve, 1500))
       
-      // Dados simulados de rotas
+      // Dados simulados de rotas mais realistas
       const mockRoutes: Route[] = [
         {
           id: '1',
@@ -88,8 +186,8 @@ export function useEcoMove() {
           color: 'from-blue-500 to-cyan-500',
           icon: '⚡',
           steps: [
-            { transport: 'Metro', line: 'Linha Azul', duration: '15 min', icon: '🚇' },
-            { transport: 'Autocarro', line: '728', duration: '13 min', icon: '🚌' }
+            { transport: 'Metro', line: 'Linha Azul - Marquês de Pombal', duration: '15 min', icon: '🚇' },
+            { transport: 'Autocarro', line: '728 - Saldanha', duration: '13 min', icon: '🚌' }
           ]
         },
         {
@@ -101,8 +199,8 @@ export function useEcoMove() {
           color: 'from-green-500 to-emerald-500',
           icon: '💰',
           steps: [
-            { transport: 'Autocarro', line: '735', duration: '20 min', icon: '🚌' },
-            { transport: 'Tram', line: '28', duration: '15 min', icon: '🚋' }
+            { transport: 'Autocarro', line: '735 - Avenidas Novas', duration: '20 min', icon: '🚌' },
+            { transport: 'Tram', line: '28 - Chiado', duration: '15 min', icon: '🚋' }
           ]
         },
         {
@@ -114,8 +212,8 @@ export function useEcoMove() {
           color: 'from-emerald-500 to-green-600',
           icon: '🌱',
           steps: [
-            { transport: 'Bicicleta', line: 'GIRA', duration: '12 min', icon: '🚲' },
-            { transport: 'Metro', line: 'Linha Verde', duration: '20 min', icon: '🚇' }
+            { transport: 'Bicicleta', line: 'GIRA - Estação Cais do Sodré', duration: '12 min', icon: '🚲' },
+            { transport: 'Metro', line: 'Linha Verde - Baixa-Chiado', duration: '20 min', icon: '🚇' }
           ]
         }
       ]
@@ -123,7 +221,7 @@ export function useEcoMove() {
       setRoutes(mockRoutes)
       setShowRoutes(true)
     } catch (err) {
-      setError('Erro ao buscar rotas. Tente novamente.')
+      setError('Erro ao buscar rotas. Verifique sua conexão e tente novamente.')
     } finally {
       setIsLoading(false)
     }
@@ -132,6 +230,17 @@ export function useEcoMove() {
   // Funções para carteira
   const addBalance = useCallback((amount: number) => {
     setWalletBalance(prev => prev + amount)
+    
+    // Simular notificação de recarga
+    const notification: Notification = {
+      id: Date.now().toString(),
+      type: 'tip',
+      title: 'Saldo Adicionado',
+      message: `€${amount.toFixed(2)} foram adicionados à sua carteira com sucesso!`,
+      time: 'Agora',
+      read: false
+    }
+    setNotifications(prev => [notification, ...prev])
   }, [])
 
   const deductBalance = useCallback((amount: number) => {
@@ -186,7 +295,7 @@ export function useEcoMove() {
   // Função para obter localização do usuário
   const getUserLocation = useCallback(async () => {
     if (!navigator.geolocation) {
-      setError('Geolocalização não suportada')
+      setError('Geolocalização não suportada neste dispositivo')
       return
     }
 
@@ -201,22 +310,59 @@ export function useEcoMove() {
 
       const { latitude, longitude } = position.coords
       
-      // Simular reverse geocoding
-      setUserLocation(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`)
+      // Simular reverse geocoding com localizações de Lisboa
+      const locations = [
+        'Marquês de Pombal, Lisboa',
+        'Cais do Sodré, Lisboa',
+        'Rossio, Lisboa',
+        'Chiado, Lisboa',
+        'Bairro Alto, Lisboa'
+      ]
+      
+      const randomLocation = locations[Math.floor(Math.random() * locations.length)]
+      setUserLocation(randomLocation)
+      
+      // Notificar sucesso
+      const notification: Notification = {
+        id: Date.now().toString(),
+        type: 'tip',
+        title: 'Localização Atualizada',
+        message: `Sua localização foi atualizada para ${randomLocation}`,
+        time: 'Agora',
+        read: false
+      }
+      setNotifications(prev => [notification, ...prev])
+      
     } catch (err) {
-      setError('Erro ao obter localização')
+      setError('Erro ao obter localização. Verifique as permissões do navegador.')
     }
   }, [])
 
   // Função para alternar idioma
   const changeLanguage = useCallback((language: 'pt' | 'en' | 'es') => {
     setSelectedLanguage(language)
-  }, [])
+    
+    // Atualizar idioma do usuário
+    if (user) {
+      setUser(prev => prev ? { ...prev, language } : null)
+    }
+  }, [user])
 
   // Função para upgrade premium
   const upgradeToPremium = useCallback(() => {
     if (user) {
       setUser(prev => prev ? { ...prev, isPremium: true } : null)
+      
+      // Notificar upgrade
+      const notification: Notification = {
+        id: Date.now().toString(),
+        type: 'tip',
+        title: 'Bem-vindo ao Premium!',
+        message: 'Agora você tem acesso a rotas offline, estatísticas avançadas e muito mais!',
+        time: 'Agora',
+        read: false
+      }
+      setNotifications(prev => [notification, ...prev])
     }
   }, [user])
 
@@ -225,7 +371,7 @@ export function useEcoMove() {
     const totalTrips = recentTrips.length
     const moneySaved = recentTrips.reduce((sum, trip) => {
       const cost = parseFloat(trip.cost.replace('€', ''))
-      return sum + (cost * 0.5) // Simular economia
+      return sum + (cost * 0.6) // Simular economia vs carro
     }, 0)
     const co2Saved = recentTrips.reduce((sum, trip) => {
       const co2 = parseFloat(trip.co2Saved.replace(' kg', ''))
@@ -233,14 +379,14 @@ export function useEcoMove() {
     }, 0)
     const timeSaved = recentTrips.reduce((sum, trip) => {
       const duration = parseInt(trip.duration.replace(' min', ''))
-      return sum + (duration * 0.2) // Simular tempo poupado
+      return sum + (duration * 0.25) // Simular tempo poupado vs trânsito
     }, 0)
 
     setStatistics({
       totalTrips,
       moneySaved,
       co2Saved,
-      timeSaved,
+      timeSaved: timeSaved / 60, // converter para horas
       favoriteTransport: 'metro',
       monthlyTrips: totalTrips
     })
