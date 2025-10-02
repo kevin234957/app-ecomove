@@ -33,7 +33,9 @@ import {
   X,
   Smartphone,
   Wifi,
-  WifiOff
+  WifiOff,
+  QrCode,
+  Ticket
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -48,6 +50,13 @@ import { Separator } from '@/components/ui/separator'
 import { useEcoMove } from '@/hooks/useEcoMove'
 import { formatCurrency, formatRelativeTime } from '@/lib/utils'
 import { TRANSLATIONS } from '@/lib/constants'
+import { 
+  InteractiveMap, 
+  TransportCard, 
+  PremiumStats, 
+  SocialLogin, 
+  RealTimeAlert 
+} from '@/components/EcoMoveComponents'
 
 export default function EcoMove() {
   const {
@@ -74,8 +83,8 @@ export default function EcoMove() {
   } = useEcoMove()
 
   const [showMobileMenu, setShowMobileMenu] = useState(false)
-  const [isOffline, setIsOffline] = useState(false)
   const [showLoginDialog, setShowLoginDialog] = useState(false)
+  const [showRealTimeAlert, setShowRealTimeAlert] = useState(false)
 
   const isPremium = user?.isPremium || false
 
@@ -85,57 +94,24 @@ export default function EcoMove() {
     }
   }
 
+  const handleSocialLogin = (provider: string) => {
+    // Simular login bem-sucedido
+    console.log(`Login com ${provider}`)
+    setShowLoginDialog(false)
+    
+    // Mostrar alerta de boas-vindas
+    setTimeout(() => {
+      setShowRealTimeAlert(true)
+    }, 1000)
+  }
+
   // Componente do Mapa
   const MapView = () => (
-    <div className="relative h-full bg-gradient-to-br from-blue-50 to-green-50 rounded-lg overflow-hidden">
-      {/* Simulação do mapa */}
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\"60\" height=\"60\" viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"none\" fill-rule=\"evenodd\"%3E%3Cg fill=\"%23e5f3ff\" fill-opacity=\"0.3\"%3E%3Ccircle cx=\"30\" cy=\"30\" r=\"2\"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]"></div>
-      
-      {/* Localização do usuário */}
-      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-        <div className="relative">
-          <div className="w-6 h-6 bg-blue-500 rounded-full border-4 border-white shadow-lg animate-pulse"></div>
-          <div className="absolute -top-2 -left-2 w-10 h-10 bg-blue-500/20 rounded-full animate-ping"></div>
-        </div>
-      </div>
-
-      {/* Pontos de transporte simulados */}
-      <div className="absolute top-1/4 left-1/3 w-3 h-3 bg-green-500 rounded-full shadow-md"></div>
-      <div className="absolute top-3/4 right-1/4 w-3 h-3 bg-blue-500 rounded-full shadow-md"></div>
-      <div className="absolute bottom-1/4 left-1/4 w-3 h-3 bg-purple-500 rounded-full shadow-md"></div>
-      
-      {/* Controles do mapa */}
-      <div className="absolute bottom-4 right-4 flex flex-col gap-2">
-        <Button size="sm" variant="secondary" className="w-10 h-10 p-0 bg-white/90 backdrop-blur-sm">
-          <Plus className="w-4 h-4" />
-        </Button>
-        <Button 
-          size="sm" 
-          variant="secondary" 
-          className="w-10 h-10 p-0 bg-white/90 backdrop-blur-sm"
-          onClick={getUserLocation}
-        >
-          <Navigation className="w-4 h-4" />
-        </Button>
-      </div>
-
-      {/* Localização atual */}
-      <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-md">
-        <div className="flex items-center gap-2 text-sm">
-          <MapPin className="w-4 h-4 text-blue-500" />
-          <span className="font-medium">{userLocation}</span>
-        </div>
-      </div>
-
-      {/* Indicador offline */}
-      {isOffline && (
-        <div className="absolute top-4 right-4 bg-red-500/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-md">
-          <div className="flex items-center gap-2 text-sm text-white">
-            <WifiOff className="w-4 h-4" />
-            <span>Offline</span>
-          </div>
-        </div>
-      )}
+    <div className="h-full">
+      <InteractiveMap 
+        userLocation={userLocation} 
+        onLocationUpdate={getUserLocation}
+      />
     </div>
   )
 
@@ -179,7 +155,7 @@ export default function EcoMove() {
             <Button
               key={fav.id}
               variant="outline"
-              className="justify-start h-auto p-4"
+              className="justify-start h-auto p-4 hover:bg-blue-50"
               onClick={() => {
                 setSearchDestination(fav.address)
                 searchRoutes(fav.address)
@@ -208,7 +184,7 @@ export default function EcoMove() {
         <div className="space-y-4">
           <h3 className="font-semibold">Rotas para {searchDestination || 'destino'}</h3>
           {routes.map((route) => (
-            <Card key={route.id} className="overflow-hidden">
+            <Card key={route.id} className="overflow-hidden hover:shadow-lg transition-shadow">
               <CardContent className="p-4">
                 <div className={`bg-gradient-to-r ${route.color} text-white p-3 rounded-lg mb-3`}>
                   <div className="flex items-center justify-between">
@@ -231,10 +207,10 @@ export default function EcoMove() {
                 <div className="space-y-2">
                   {route.steps.map((step, index) => (
                     <div key={index} className="flex items-center gap-3 text-sm">
-                      {step.transport === 'Metro' && <Train className="w-4 h-4" />}
-                      {step.transport === 'Autocarro' && <Bus className="w-4 h-4" />}
-                      {step.transport === 'Tram' && <Train className="w-4 h-4" />}
-                      {step.transport === 'Bicicleta' && <Bike className="w-4 h-4" />}
+                      {step.transport === 'Metro' && <Train className="w-4 h-4 text-blue-600" />}
+                      {step.transport === 'Autocarro' && <Bus className="w-4 h-4 text-green-600" />}
+                      {step.transport === 'Tram' && <Train className="w-4 h-4 text-yellow-600" />}
+                      {step.transport === 'Bicicleta' && <Bike className="w-4 h-4 text-purple-600" />}
                       <span className="font-medium">{step.transport}</span>
                       <span className="text-gray-500">{step.line}</span>
                       <span className="ml-auto text-gray-600">{step.duration}</span>
@@ -247,7 +223,7 @@ export default function EcoMove() {
                     <Leaf className="w-4 h-4" />
                     <span className="text-sm">CO₂ poupado: {route.co2Saved}</span>
                   </div>
-                  <Button size="sm" className="bg-gradient-to-r from-green-500 to-blue-500">
+                  <Button size="sm" className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600">
                     Selecionar
                   </Button>
                 </div>
@@ -284,7 +260,7 @@ export default function EcoMove() {
               key={amount}
               variant="outline"
               onClick={() => addBalance(amount)}
-              className="h-16 flex flex-col gap-1"
+              className="h-16 flex flex-col gap-1 hover:bg-green-50"
             >
               <Plus className="w-5 h-5" />
               <span>{formatCurrency(amount)}</span>
@@ -297,37 +273,29 @@ export default function EcoMove() {
       <div>
         <h3 className="font-semibold mb-3">Cartões de Transporte</h3>
         <div className="space-y-3">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <CreditCard className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium">Cartão Metropolitano</p>
-                    <p className="text-sm text-gray-500">Metro, Autocarro, Tram</p>
-                  </div>
-                </div>
-                <Badge variant="secondary">Ativo</Badge>
-              </div>
-            </CardContent>
-          </Card>
+          <TransportCard
+            name="Cartão Metropolitano"
+            type="metro"
+            balance={25.40}
+            isActive={true}
+            onTopUp={() => addBalance(10)}
+          />
           
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                  <Bike className="w-5 h-5 text-green-600" />
-                </div>
-                <div>
-                  <p className="font-medium">GIRA Bicicletas</p>
-                  <p className="text-sm text-gray-500">Bicicletas partilhadas</p>
-                </div>
-                <Badge variant="secondary" className="ml-auto">Ativo</Badge>
-              </div>
-            </CardContent>
-          </Card>
+          <TransportCard
+            name="GIRA Bicicletas"
+            type="bike"
+            balance={8.60}
+            isActive={true}
+            onTopUp={() => addBalance(5)}
+          />
+          
+          <TransportCard
+            name="Carris Autocarro"
+            type="bus"
+            balance={12.20}
+            isActive={false}
+            onTopUp={() => addBalance(10)}
+          />
         </div>
       </div>
 
@@ -336,19 +304,17 @@ export default function EcoMove() {
         <h3 className="font-semibold mb-3">Transações Recentes</h3>
         <div className="space-y-2">
           {[
-            { type: 'Metro', amount: -2.40, time: 'Hoje, 08:30' },
-            { type: 'Recarga', amount: +20.00, time: 'Ontem, 19:15' },
-            { type: 'Autocarro', amount: -1.80, time: 'Ontem, 18:45' }
+            { type: 'Metro', amount: -2.40, time: 'Hoje, 08:30', icon: <Train className="w-4 h-4" /> },
+            { type: 'Recarga', amount: +20.00, time: 'Ontem, 19:15', icon: <Plus className="w-4 h-4" /> },
+            { type: 'Autocarro', amount: -1.80, time: 'Ontem, 18:45', icon: <Bus className="w-4 h-4" /> },
+            { type: 'GIRA', amount: -1.50, time: 'Anteontem, 14:20', icon: <Bike className="w-4 h-4" /> }
           ].map((transaction, index) => (
-            <div key={index} className="flex items-center justify-between py-2">
+            <div key={index} className="flex items-center justify-between py-3 px-2 rounded-lg hover:bg-gray-50">
               <div className="flex items-center gap-3">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                  transaction.amount > 0 ? 'bg-green-100' : 'bg-red-100'
+                  transaction.amount > 0 ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
                 }`}>
-                  {transaction.amount > 0 ? 
-                    <Plus className="w-4 h-4 text-green-600" /> : 
-                    <CreditCard className="w-4 h-4 text-red-600" />
-                  }
+                  {transaction.icon}
                 </div>
                 <div>
                   <p className="font-medium">{transaction.type}</p>
@@ -378,7 +344,7 @@ export default function EcoMove() {
       </div>
       
       {notifications.length > 0 ? notifications.map((notification) => (
-        <Card key={notification.id} className={`${!notification.read ? 'border-blue-200 bg-blue-50/50' : ''}`}>
+        <Card key={notification.id} className={`${!notification.read ? 'border-blue-200 bg-blue-50/50' : ''} hover:shadow-md transition-shadow`}>
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
               <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
@@ -455,32 +421,7 @@ export default function EcoMove() {
 
       {/* Estatísticas */}
       {statistics && (
-        <div className="grid grid-cols-2 gap-4">
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-green-600">{statistics.totalTrips}</div>
-              <div className="text-sm text-gray-500">Viagens este mês</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-blue-600">{formatCurrency(statistics.moneySaved)}</div>
-              <div className="text-sm text-gray-500">Economizado</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-purple-600">{statistics.co2Saved.toFixed(1)} kg</div>
-              <div className="text-sm text-gray-500">CO₂ poupado</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-orange-600">{Math.round(statistics.timeSaved)}h</div>
-              <div className="text-sm text-gray-500">Tempo poupado</div>
-            </CardContent>
-          </Card>
-        </div>
+        <PremiumStats stats={statistics} isPremium={isPremium} />
       )}
 
       {/* Upgrade para Premium */}
@@ -553,7 +494,7 @@ export default function EcoMove() {
           <h3 className="font-semibold mb-3">Viagens Recentes</h3>
           <div className="space-y-3">
             {recentTrips.slice(0, 5).map((trip) => (
-              <Card key={trip.id}>
+              <Card key={trip.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
@@ -711,25 +652,20 @@ export default function EcoMove() {
           <DialogHeader>
             <DialogTitle className="text-center">Entrar no EcoMove</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <Button className="w-full bg-blue-600 hover:bg-blue-700">
-              <Smartphone className="w-5 h-5 mr-2" />
-              Continuar com Google
-            </Button>
-            <Button variant="outline" className="w-full">
-              <Smartphone className="w-5 h-5 mr-2" />
-              Continuar com Apple
-            </Button>
-            <Button variant="outline" className="w-full">
-              <Smartphone className="w-5 h-5 mr-2" />
-              Continuar com Facebook
-            </Button>
-            <div className="text-center text-sm text-gray-500">
-              Ao continuar, você concorda com nossos Termos de Uso e Política de Privacidade
-            </div>
+          <div className="py-4">
+            <SocialLogin onLogin={handleSocialLogin} />
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Alerta em tempo real */}
+      {showRealTimeAlert && (
+        <RealTimeAlert
+          type="tip"
+          message="Bem-vindo ao EcoMove! Comece explorando as rotas sustentáveis da sua cidade."
+          onDismiss={() => setShowRealTimeAlert(false)}
+        />
+      )}
     </div>
   )
 }
